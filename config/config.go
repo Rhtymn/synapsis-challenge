@@ -14,6 +14,7 @@ var (
 type Config struct {
 	DatabaseURL string
 	ServerAddr string
+	CorsDomain string
 }
 
 func InitConfig() error {
@@ -32,6 +33,11 @@ func LoadConfig() (*Config, error) {
 		return nil, ErrMissingKey
 	}
 	ret.ServerAddr = os.Getenv("SERVER_ADDR")
+
+	if (os.Getenv("CORS_DOMAIN") == "") {
+		return nil, ErrMissingKey
+	}
+	ret.CorsDomain = os.Getenv("CORS_DOMAIN")
 
 	return &ret, nil
 }

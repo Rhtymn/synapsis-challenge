@@ -6,6 +6,7 @@ import (
 
 	"github.com/Rhtymn/synapsis-challenge/config"
 	"github.com/Rhtymn/synapsis-challenge/database"
+	"github.com/Rhtymn/synapsis-challenge/middleware"
 	"github.com/Rhtymn/synapsis-challenge/server"
 )
 
@@ -28,7 +29,11 @@ func main() {
 	}
 	defer db.Close()
 
-	router := server.SetupServer()
+	corsHandler := middleware.CorsHandler(conf.CorsDomain)
+
+	router := server.SetupServer(server.ServerOpts{
+		CorsHandler: corsHandler,
+	})
 	srv := &http.Server{
 		Addr: conf.ServerAddr,
 		Handler: router,
