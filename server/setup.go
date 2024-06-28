@@ -6,6 +6,7 @@ import (
 
 type ServerOpts struct {
 	CorsHandler gin.HandlerFunc
+	ErrorHandler gin.HandlerFunc
 }
 
 func SetupServer(opts ServerOpts) *gin.Engine {
@@ -15,6 +16,7 @@ func SetupServer(opts ServerOpts) *gin.Engine {
 	router.Use(
 		gin.Recovery(),
 		opts.CorsHandler,
+		opts.ErrorHandler,
 	)
 
 	return router

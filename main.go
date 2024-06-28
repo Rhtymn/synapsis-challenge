@@ -30,9 +30,11 @@ func main() {
 	defer db.Close()
 
 	corsHandler := middleware.CorsHandler(conf.CorsDomain)
+	errorHandler := middleware.ErrorHandler()
 
 	router := server.SetupServer(server.ServerOpts{
 		CorsHandler: corsHandler,
+		ErrorHandler: errorHandler,
 	})
 	srv := &http.Server{
 		Addr: conf.ServerAddr,
