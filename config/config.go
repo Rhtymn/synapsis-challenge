@@ -13,6 +13,7 @@ var (
 
 type Config struct {
 	DatabaseURL string
+	ServerAddr string
 }
 
 func InitConfig() error {
@@ -26,6 +27,11 @@ func LoadConfig() (*Config, error) {
 		return nil, ErrMissingKey
 	}
 	ret.DatabaseURL = os.Getenv("DATABASE_URL")
+
+	if (os.Getenv("SERVER_ADDR") == "") {
+		return nil, ErrMissingKey
+	}
+	ret.ServerAddr = os.Getenv("SERVER_ADDR")
 
 	return &ret, nil
 }

@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/Rhtymn/synapsis-challenge/config"
 	"github.com/Rhtymn/synapsis-challenge/database"
+	"github.com/Rhtymn/synapsis-challenge/server"
 )
 
 func main() {
@@ -25,4 +27,15 @@ func main() {
 		fmt.Printf("DB Connection Error: %s\n", err)
 	}
 	defer db.Close()
+
+	router := server.SetupServer()
+	srv := &http.Server{
+		Addr: conf.ServerAddr,
+		Handler: router,
+	}
+
+	fmt.Printf("Starting Server...\n")
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		fmt.Printf("Error running server: %v\n", err)
+	}
 }
