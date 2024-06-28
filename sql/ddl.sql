@@ -106,7 +106,7 @@ CREATE TABLE shipment_methods(
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
-    deleted_at TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 CREATE TABLE payment_methods(
@@ -115,7 +115,7 @@ CREATE TABLE payment_methods(
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
-    deleted_at TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 CREATE TABLE shop_shipment_methods(
@@ -147,7 +147,7 @@ CREATE TABLE categories(
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
-    deleted_at TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 CREATE TABLE products(
@@ -162,7 +162,7 @@ CREATE TABLE products(
     deleted_at TIMESTAMP,
 
     id_category BIGINT NOT NULL REFERENCES categories(id),
-    id_shop BIGINT NOT NULL REFERENCES shops(id),
+    id_shop BIGINT NOT NULL REFERENCES shops(id)
 );
 
 CREATE TABLE transactions(
@@ -207,5 +207,5 @@ CREATE TABLE payments(
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
     deleted_at TIMESTAMP,
 
-    id_transaction BIGINT NOT NULL REFERENCES transactions(id),
+    id_transaction BIGINT NOT NULL REFERENCES transactions(id)
 );
