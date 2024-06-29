@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Rhtymn/synapsis-challenge/config"
+	"github.com/Rhtymn/synapsis-challenge/constants"
 	"github.com/Rhtymn/synapsis-challenge/database"
 	"github.com/Rhtymn/synapsis-challenge/handler"
 	"github.com/Rhtymn/synapsis-challenge/middleware"
@@ -34,20 +35,26 @@ func main() {
 	defer db.Close()
 
 	userAccessProvider := util.NewJWTProvider(
+		constants.USER_PERMISSION,
 		conf.JWTIssuer,
 		conf.UserAccessSecret,
 		conf.AccessTokenLifespan,
 	)
 	sellerAccessProvider := util.NewJWTProvider(
+		constants.SELLER_PERMISSION,
 		conf.JWTIssuer,
 		conf.SellerAccessSecret,
 		conf.AccessTokenLifespan,
 	)
 	adminAccessProvider := util.NewJWTProvider(
+		constants.ADMIN_PERMISSION,
 		conf.JWTIssuer,
 		conf.AdminAccessSecret,
 		conf.AccessTokenLifespan,
 	)
+	anyAccessProvider := util.NewJWTProviderAny([]util.JWTProvider{userAccessProvider, sellerAccessProvider, adminAccessProvider})
+
+	authenticator := middleware.Authenticator(anyAccessProvider)
 
 	accountRepository := repository.NewAccountRepository(db)
 	userRepository := repository.NewUserRepository(db)
@@ -64,6 +71,7 @@ func main() {
 		UserAccessProvider:   userAccessProvider,
 		SellerAccessProvider: sellerAccessProvider,
 		AdminAccessProvider:  adminAccessProvider,
+		RandomTokenProvider:  util.NewRandomTokenProvider(32),
 	})
 
 	accountHandler := handler.NewAccountHandler(handler.AccountHandlerOpts{
@@ -77,6 +85,7 @@ func main() {
 		CorsHandler:    corsHandler,
 		ErrorHandler:   errorHandler,
 		AccountHandler: accountHandler,
+		Authenticator:  authenticator,
 	})
 	srv := &http.Server{
 		Addr:    conf.ServerAddr,

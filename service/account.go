@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/Rhtymn/synapsis-challenge/apperror"
 	"github.com/Rhtymn/synapsis-challenge/constants"
@@ -10,14 +11,16 @@ import (
 )
 
 type AccountServiceOpts struct {
-	Account              domain.AccountRepository
-	User                 domain.UserRepository
-	EmailVerifyToken     domain.EmailVerifyTokenRepository
-	PasswordHasher       util.PasswordHasher
-	Transactor           util.Transactor
+	Account          domain.AccountRepository
+	User             domain.UserRepository
+	EmailVerifyToken domain.EmailVerifyTokenRepository
+	PasswordHasher   util.PasswordHasher
+	Transactor       util.Transactor
+
 	UserAccessProvider   util.JWTProvider
 	SellerAccessProvider util.JWTProvider
 	AdminAccessProvider  util.JWTProvider
+	RandomTokenProvider  util.RandomTokenProvider
 }
 
 type accountService struct {
@@ -29,6 +32,7 @@ type accountService struct {
 	userAccessProvider         util.JWTProvider
 	sellerAccessProvider       util.JWTProvider
 	adminAccessProvider        util.JWTProvider
+	randomTokenProvider        util.RandomTokenProvider
 }
 
 func NewAccountService(opts AccountServiceOpts) *accountService {
@@ -41,6 +45,7 @@ func NewAccountService(opts AccountServiceOpts) *accountService {
 		userAccessProvider:         opts.UserAccessProvider,
 		sellerAccessProvider:       opts.SellerAccessProvider,
 		adminAccessProvider:        opts.AdminAccessProvider,
+		randomTokenProvider:        opts.RandomTokenProvider,
 	}
 }
 
@@ -133,4 +138,110 @@ func (s *accountService) CreateTokensForAccount(accountID int64, accountType str
 		AccessExpiredAt: accessClaims.ExpiresAt.Time,
 	}
 	return token, nil
+}
+
+func (s *accountService) GetVerifyEmailToken(ctx context.Context) error {
+	err := s.transactor.WithinTransaction(ctx, func(ctx context.Context) error {
+		accountId, err := util.GetAccountIDFromContext(ctx)
+		if err != nil {
+			return apperror.Wrap(err)
+		}
+
+		err = s.emailVerifyTokenRepository.SoftDeleteByAccountID(ctx, accountId)
+		if err != nil {
+			return apperror.Wrap(err)
+		}
+
+		a, err := s.accountRepository.GetById(ctx, accountId)
+		if err != nil {
+			return apperror.Wrap(err)
+		}
+
+		if a.Account.EmailVerified {
+			return apperror.NewAlreadyVerified("account already verified")
+		}
+
+		randomToken, err := s.randomTokenProvider.GenerateToken()
+		if err != nil {
+			return apperror.Wrap(err)
+		}
+
+		_, err = s.emailVerifyTokenRepository.Add(ctx, domain.EmailVerifyToken{
+			Token:     randomToken,
+			ExpiredAt: time.Now().Add(5 * time.Minute),
+			Account: domain.Account{
+				ID: a.Account.ID,
+			},
+		})
+		if err != nil {
+			return apperror.Wrap(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *accountService) CheckVerifyEmailToken(ctx context.Context, email string, token string) error {
+	a, err := s.accountRepository.GetByEmail(ctx, email)
+	if err != nil {
+		return apperror.Wrap(err)
+	}
+
+	if a.Account.EmailVerified {
+		return apperror.NewAlreadyVerified("account already verified")
+	}
+
+	emailVerifyToken, err := s.emailVerifyTokenRepository.GetByTokenStr(ctx, token)
+	if err != nil {
+		return apperror.NewInvalidVerifyEmailToken(err)
+	}
+
+	expiredAtLocal := util.ToLocalTime(emailVerifyToken.ExpiredAt)
+	if expiredAtLocal.Before(time.Now()) {
+		return apperror.NewBadRequest(nil, "token expired")
+	}
+
+	return nil
+}
+
+func (s *accountService) VerifyEmail(ctx context.Context, email string, token string) error {
+	err := s.transactor.WithinTransaction(ctx, func(ctx context.Context) error {
+		a, err := s.accountRepository.GetByEmail(ctx, email)
+		if err != nil {
+			return apperror.Wrap(err)
+		}
+
+		if a.Account.EmailVerified {
+			return apperror.NewAlreadyVerified("account already verified")
+		}
+
+		emailVerifyToken, err := s.emailVerifyTokenRepository.GetByTokenStr(ctx, token)
+		if err != nil {
+			return apperror.NewInvalidVerifyEmailToken(err)
+		}
+
+		expiredAtLocal := util.ToLocalTime(emailVerifyToken.ExpiredAt)
+		if expiredAtLocal.Before(time.Now()) {
+			return apperror.NewBadRequest(nil, "token expired")
+		}
+
+		err = s.accountRepository.VerifyEmailById(ctx, a.Account.ID)
+		if err != nil {
+			return apperror.Wrap(err)
+		}
+
+		err = s.emailVerifyTokenRepository.SoftDeleteByToken(ctx, token)
+		if err != nil {
+			return apperror.Wrap(err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return apperror.Wrap(err)
+	}
+	return nil
 }

@@ -137,9 +137,28 @@ func (r *emailVerifyTokenRepositoryPostgres) SoftDeleteByToken(ctx context.Conte
 	query := `
 		UPDATE email_verify_tokens SET deleted_at = NOW()
 			WHERE token = @token
+				AND deleted_at IS NULL
 	`
 	args := pgx.NamedArgs{
 		"token": token,
+	}
+
+	_, err := queryRunner.ExecContext(ctx, query, args)
+	if err != nil {
+		return apperror.Wrap(err)
+	}
+	return nil
+}
+
+func (r *emailVerifyTokenRepositoryPostgres) SoftDeleteByAccountID(ctx context.Context, id int64) error {
+	queryRunner := util.GetQueryRunner(ctx, r.db)
+	query := `
+		UPDATE email_verify_tokens SET deleted_at = NOW()
+			WHERE id_account = @accountID 
+				AND deleted_at IS NULL
+	`
+	args := pgx.NamedArgs{
+		"accountID": id,
 	}
 
 	_, err := queryRunner.ExecContext(ctx, query, args)

@@ -3,7 +3,9 @@ package server
 import (
 	"net/http"
 
+	"github.com/Rhtymn/synapsis-challenge/constants"
 	"github.com/Rhtymn/synapsis-challenge/handler"
+	"github.com/Rhtymn/synapsis-challenge/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,6 +14,8 @@ type ServerOpts struct {
 
 	CorsHandler  gin.HandlerFunc
 	ErrorHandler gin.HandlerFunc
+
+	Authenticator gin.HandlerFunc
 }
 
 func SetupServer(opts ServerOpts) *gin.Engine {
@@ -32,6 +36,9 @@ func SetupServer(opts ServerOpts) *gin.Engine {
 	authGroup := apiV1Group.Group("/auth")
 	authGroup.POST("/register/:type", opts.AccountHandler.Register)
 	authGroup.POST("/login", opts.AccountHandler.Login)
+	authGroup.POST("/verify-token", opts.AccountHandler.VerifyEmail)
+	authGroup.GET("/verify-token", opts.Authenticator, middleware.Authorization(constants.SELLER_PERMISSION, constants.USER_PERMISSION), opts.AccountHandler.GetVerifyEmailToken)
+	authGroup.GET("/check-verify-token", opts.AccountHandler.CheckVerifyEmailToken)
 
 	return router
 }
