@@ -52,4 +52,8 @@ type AccountService interface {
 	Register(ctx context.Context, cred AccountRegisterCredentials) (Account, error)
 
 	CreateTokensForAccount(accountID int64, accountType string) (AuthToken, error)
+
+	GetVerifyEmailToken(ctx context.Context) error
+	CheckVerifyEmailToken(ctx context.Context, email string, token string) error
+	VerifyEmail(ctx context.Context, email string, token string) error
 }
