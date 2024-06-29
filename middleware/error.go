@@ -51,7 +51,9 @@ func getHttpStatus(err *apperror.AppError) int {
 	case apperror.CodeAlreadyVerified:
 		return http.StatusBadRequest
 	case apperror.CodeInvalidToken:
-		return http.StatusBadRequest
+		return http.StatusUnauthorized
+	case apperror.CodeUnimplemented:
+		return http.StatusNotImplemented
 	default:
 		return http.StatusInternalServerError
 	}

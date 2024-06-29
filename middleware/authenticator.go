@@ -41,6 +41,7 @@ func Authenticator(jwtProvider util.JWTProvider) gin.HandlerFunc {
 		}
 
 		ctx.Set(constants.ContextAccountID, claims.AccountID)
+		ctx.Set(constants.ContextPermission, claims.Permission)
 		ctx.Next()
 	}
 }
