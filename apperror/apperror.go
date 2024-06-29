@@ -103,3 +103,11 @@ func NewForbidden(err error, message string) error {
 		err,
 	)
 }
+
+func NewNotImplemented(message string) error {
+	return NewAppError(
+		CodeUnimplemented,
+		message,
+		nil,
+	)
+}

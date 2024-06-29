@@ -7,3 +7,7 @@ func NewWrongPassword(err error, message string) error {
 func NewAlreadyVerified(message string) error {
 	return NewAppError(CodeAlreadyVerified, message, nil)
 }
+
+func NewInvalidVerifyEmailToken(err error) error {
+	return NewAppError(CodeBadRequest, "invalid token", err)
+}

@@ -10,4 +10,5 @@ const (
 	CodeWrongPassword
 	CodeInvalidToken
 	CodeAlreadyVerified
+	CodeUnimplemented
 )
