@@ -1,5 +1,6 @@
 package constants
 
 const (
-	ContextAccountID = "accountID"
+	ContextAccountID  = "accountID"
+	ContextPermission = "permission"
 )
