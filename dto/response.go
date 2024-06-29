@@ -1,6 +1,10 @@
 package dto
 
-import "github.com/Rhtymn/synapsis-challenge/apperror"
+import (
+	"fmt"
+
+	"github.com/Rhtymn/synapsis-challenge/apperror"
+)
 
 type Response struct {
 	Message string `json:"message"`
@@ -10,6 +14,20 @@ type Response struct {
 func ResponseError(appErr *apperror.AppError) Response {
 	return Response{
 		Message: appErr.Message,
-		Data: nil,
+		Data:    nil,
+	}
+}
+
+func ResponseCreated(domain string, data any) Response {
+	return Response{
+		Message: fmt.Sprintf("%s created", domain),
+		Data:    data,
+	}
+}
+
+func ResponseOK(data any) Response {
+	return Response{
+		Message: "ok",
+		Data:    data,
 	}
 }
