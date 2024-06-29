@@ -9,4 +9,5 @@ const (
 	CodeForbidden
 	CodeWrongPassword
 	CodeInvalidToken
+	CodeAlreadyVerified
 )
