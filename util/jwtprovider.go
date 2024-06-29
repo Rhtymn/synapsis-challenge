@@ -9,7 +9,8 @@ import (
 
 type JWTClaims struct {
 	jwt.RegisteredClaims
-	AccountID int64 `json:"accountId"`
+	AccountID  int64 `json:"accountId"`
+	Permission int64 `json:"permission"`
 }
 
 type JWTProvider interface {
@@ -18,16 +19,18 @@ type JWTProvider interface {
 }
 
 type jwtProviderHS256 struct {
-	issuer    string
-	secretKey string
-	lifespan  time.Duration
+	permission int64
+	issuer     string
+	secretKey  string
+	lifespan   time.Duration
 }
 
-func NewJWTProvider(issuer string, secretKey string, lifespan time.Duration) *jwtProviderHS256 {
+func NewJWTProvider(permission int64, issuer string, secretKey string, lifespan time.Duration) *jwtProviderHS256 {
 	return &jwtProviderHS256{
-		issuer:    issuer,
-		secretKey: secretKey,
-		lifespan:  lifespan,
+		permission: permission,
+		issuer:     issuer,
+		secretKey:  secretKey,
+		lifespan:   lifespan,
 	}
 }
 
@@ -38,7 +41,8 @@ func (p *jwtProviderHS256) CreateToken(accountID int64) (string, error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(p.lifespan)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
-		AccountID: accountID,
+		AccountID:  accountID,
+		Permission: p.permission,
 	})
 
 	signed, err := token.SignedString([]byte(p.secretKey))
