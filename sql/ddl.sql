@@ -3,7 +3,6 @@ CREATE DATABASE synapsis_db;
 
 \c synapsis_db
 
-CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE TABLE accounts(
     id BIGSERIAL PRIMARY KEY,
@@ -36,6 +35,7 @@ CREATE TABLE users(
     date_of_birth DATE,
     gender VARCHAR(6),
     phone_number VARCHAR,
+    main_address_id BIGINT,
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -49,7 +49,8 @@ CREATE TABLE user_addresses(
     name VARCHAR NOT NULL,
     phone_number VARCHAR NOT NULL,
     address VARCHAR NOT NULL,
-    coordinate GEOGRAPHY(POINT) NOT NULL,
+    latitude NUMERIC NOT NULL,
+    longitude NUMERIC NOT NULL,
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -91,7 +92,8 @@ CREATE TABLE shops(
     phone_number VARCHAR UNIQUE NOT NULL,
     description VARCHAR,
     address VARCHAR NOT NULL,
-    coordinate GEOGRAPHY(POINT) NOT NULL,
+    latitude NUMERIC NOT NULL,
+    longitude NUMERIC NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -175,7 +177,8 @@ CREATE TABLE transactions(
     shipment_fee DECIMAL NOT NULL,
     total_fee DECIMAL NOT NULL,
     address VARCHAR NOT NULL,
-    coordinate GEOGRAPHY(POINT) NOT NULL,
+    latitude NUMERIC NOT NULL,
+    longitude NUMERIC NOT NULL,
     
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
