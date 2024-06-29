@@ -43,6 +43,7 @@ func (r *userRepositoryPostgres) GetById(ctx context.Context, id int64) (domain.
 			&dateOfBirth,
 			&user.Gender,
 			&user.Account.ID,
+			&user.MainAddressID,
 		)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -78,6 +79,43 @@ func (r *userRepositoryPostgres) GetByIdAndLock(ctx context.Context, id int64) (
 			&dateOfBirth,
 			&user.Gender,
 			&user.Account.ID,
+			&user.MainAddressID,
+		)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, apperror.NewNotFound(err, "user not found")
+		}
+		return user, apperror.Wrap(err)
+	}
+	user.DateOfBirth = toTimePtr(dateOfBirth)
+
+	return user, nil
+}
+
+func (r *userRepositoryPostgres) GetByAccountID(ctx context.Context, accountID int64) (domain.User, error) {
+	user := domain.User{}
+	queryRunner := util.GetQueryRunner(ctx, r.db)
+	args := pgx.NamedArgs{
+		"accountID": accountID,
+	}
+	query := `
+		SELECT ` + constants.UserColumns + `
+		FROM users 
+		WHERE id_account = @accountID
+			AND deleted_at IS NULL
+	`
+
+	var dateOfBirth sql.NullTime
+	err := queryRunner.
+		QueryRowContext(ctx, query, args).
+		Scan(&user.ID,
+			&user.Name,
+			&user.PhotoURL,
+			&dateOfBirth,
+			&user.Gender,
+			&user.PhoneNumber,
+			&user.Account.ID,
+			&user.MainAddressID,
 		)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -117,6 +155,7 @@ func (r *userRepositoryPostgres) Add(ctx context.Context, user domain.User) (dom
 			&u.Gender,
 			&u.PhoneNumber,
 			&u.Account.ID,
+			&u.MainAddressID,
 		)
 	if err != nil {
 		return u, apperror.Wrap(err)
@@ -155,6 +194,8 @@ func (r *userRepositoryPostgres) Update(ctx context.Context, user domain.User) (
 			&dateOfBirth,
 			&u.Gender,
 			&u.PhoneNumber,
+			&u.Account.ID,
+			&u.MainAddressID,
 		)
 	if err != nil {
 		return u, apperror.Wrap(err)
@@ -188,4 +229,23 @@ func (r *userRepositoryPostgres) IsPhoneNumberUsed(ctx context.Context, phoneNum
 	}
 
 	return true, nil
+}
+
+func (r *userRepositoryPostgres) SetMainAddressByID(ctx context.Context, addressID int64, userID int64) error {
+	queryRunner := util.GetQueryRunner(ctx, r.db)
+	query := `
+		UPDATE users 
+			SET main_address_id = @addressID
+		WHERE id = @userID
+	`
+	args := pgx.NamedArgs{
+		"addressID": addressID,
+		"userID":    userID,
+	}
+
+	_, err := queryRunner.ExecContext(ctx, query, args)
+	if err != nil {
+		return apperror.Wrap(err)
+	}
+	return nil
 }
