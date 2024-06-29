@@ -186,7 +186,7 @@ func (r *accountRepositoryPostgres) VerifyEmailById(ctx context.Context, id int6
 	}
 	query := `
 		UPDATE accounts 
-			SET email_verified = true
+			SET email_verified = true, updated_at = NOW()
 		WHERE id = @id 
 			AND deleted_at IS NULL
 	`
@@ -204,7 +204,7 @@ func (r *accountRepositoryPostgres) ProfileSetById(ctx context.Context, id int64
 	}
 	query := `
 		UPDATE accounts
-			SET profile_set = true
+			SET profile_set = true, updated_at = NOW()
 		WHERE id = @id
 			AND deleted_at IS NULL
 	`
