@@ -7,10 +7,11 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE TABLE accounts(
     id BIGSERIAL PRIMARY KEY,
-    email VARCHAR UNIQUE NOT NULL,
+    email VARCHAR NOT NULL,
     email_verified BOOLEAN NOT NULL DEFAULT FALSE,
     password VARCHAR NOT NULL,
     account_type VARCHAR(6) NOT NULL,
+    profile_set BOOLEAN NOT NULL DEFAULT FALSE,
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -32,9 +33,9 @@ CREATE TABLE users(
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
     photo_url VARCHAR,
-    date_of_birth DATE NOT NULL,
+    date_of_birth DATE,
     gender VARCHAR(6),
-    phone_number VARCHAR UNIQUE NOT NULL,
+    phone_number VARCHAR,
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
