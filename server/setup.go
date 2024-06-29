@@ -1,11 +1,16 @@
 package server
 
 import (
+	"net/http"
+
+	"github.com/Rhtymn/synapsis-challenge/handler"
 	"github.com/gin-gonic/gin"
 )
 
 type ServerOpts struct {
-	CorsHandler gin.HandlerFunc
+	AccountHandler *handler.AccountHandler
+
+	CorsHandler  gin.HandlerFunc
 	ErrorHandler gin.HandlerFunc
 }
 
@@ -18,6 +23,15 @@ func SetupServer(opts ServerOpts) *gin.Engine {
 		opts.CorsHandler,
 		opts.ErrorHandler,
 	)
+
+	apiV1Group := router.Group("/api/v1")
+	apiV1Group.GET("/ping", func(ctx *gin.Context) {
+		ctx.String(http.StatusOK, "pong")
+	})
+
+	authGroup := apiV1Group.Group("/auth")
+	authGroup.POST("/register/:type", opts.AccountHandler.Register)
+	authGroup.POST("/login", opts.AccountHandler.Login)
 
 	return router
 }
