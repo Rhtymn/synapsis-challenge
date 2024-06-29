@@ -20,6 +20,11 @@ type AccountTypeParams struct {
 	Type string `uri:"type" binding:"required,oneof=user seller"`
 }
 
+type VerifyEmailQuery struct {
+	Email string `form:"email" binding:"required,email"`
+	Token string `form:"token" binding:"required"`
+}
+
 func (ar *AccountRegisterRequest) ToCredentials(accountType string) domain.AccountRegisterCredentials {
 	return domain.AccountRegisterCredentials{
 		Account: domain.Account{
