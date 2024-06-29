@@ -7,4 +7,6 @@ const (
 	CodeAlreadyExists
 	CodeUnauthorized
 	CodeForbidden
+	CodeWrongPassword
+	CodeInvalidToken
 )
