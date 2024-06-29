@@ -7,13 +7,14 @@ import (
 )
 
 type User struct {
-	ID          int64
-	Account     Account
-	Name        string
-	PhotoURL    *string
-	DateOfBirth *time.Time
-	Gender      *string
-	PhoneNumber *string
+	ID            int64
+	Account       Account
+	Name          string
+	PhotoURL      *string
+	DateOfBirth   *time.Time
+	Gender        *string
+	PhoneNumber   *string
+	MainAddressID *int64
 }
 
 type UserProfile struct {
@@ -27,12 +28,16 @@ type UserProfile struct {
 type UserRepository interface {
 	GetById(ctx context.Context, id int64) (User, error)
 	GetByIdAndLock(ctx context.Context, id int64) (User, error)
+	GetByAccountID(ctx context.Context, accountID int64) (User, error)
 
 	Add(ctx context.Context, user User) (User, error)
 	Update(ctx context.Context, user User) (User, error)
 	IsPhoneNumberUsed(ctx context.Context, phoneNumber string) (bool, error)
+
+	SetMainAddressByID(ctx context.Context, addressID int64, userID int64) error
 }
 
 type UserService interface {
-	CreateProfile(ctx context.Context, up UserProfile) (User, error)
+	AddAddress(ctx context.Context, ua UserAddress) (UserAddress, error)
+	UpdateMainAddress(ctx context.Context, addressID int64) error
 }
