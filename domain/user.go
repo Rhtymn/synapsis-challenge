@@ -19,7 +19,7 @@ type User struct {
 
 type UserProfile struct {
 	Name        string
-	PhotoURL    multipart.File
+	Photo       *multipart.File
 	DateOfBirth time.Time
 	Gender      string
 	PhoneNumber string
@@ -40,4 +40,5 @@ type UserRepository interface {
 type UserService interface {
 	AddAddress(ctx context.Context, ua UserAddress) (UserAddress, error)
 	UpdateMainAddress(ctx context.Context, addressID int64) error
+	UpdateProfile(ctx context.Context, up UserProfile) (User, error)
 }

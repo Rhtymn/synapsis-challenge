@@ -52,6 +52,7 @@ func SetupServer(opts ServerOpts) *gin.Engine {
 	)
 	userGroup.POST("/addresses", opts.UserHandler.AddAddress)
 	userGroup.PATCH("/addresses/:address_id/main", opts.UserHandler.UpdateMainAddress)
+	userGroup.PUT(".", opts.UserHandler.UpdateProfile)
 
 	return router
 }

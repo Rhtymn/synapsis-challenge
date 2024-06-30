@@ -174,6 +174,7 @@ func (r *userRepositoryPostgres) Update(ctx context.Context, user domain.User) (
 		"dob":         user.DateOfBirth,
 		"gender":      user.Gender,
 		"phoneNumber": user.PhoneNumber,
+		"id":          user.ID,
 	}
 	query := `
 		UPDATE users 
@@ -181,7 +182,8 @@ func (r *userRepositoryPostgres) Update(ctx context.Context, user domain.User) (
 				photo_url = @photo, 
 				date_of_birth = @dob, 
 				gender = @gender, 
-				phone_number = @phoneNumber,
+				phone_number = @phoneNumber
+			WHERE id = @id 
 		RETURNING ` + constants.UserColumns + `
 	`
 
@@ -200,7 +202,7 @@ func (r *userRepositoryPostgres) Update(ctx context.Context, user domain.User) (
 	if err != nil {
 		return u, apperror.Wrap(err)
 	}
-	user.DateOfBirth = toTimePtr(dateOfBirth)
+	u.DateOfBirth = toTimePtr(dateOfBirth)
 
 	return u, nil
 }

@@ -63,6 +63,14 @@ func main() {
 
 	passwordHasher := util.NewPasswordHasherBcrypt(10)
 	transactor := util.NewTransactor(db)
+	cloudinaryProvider, err := util.NewCloudinaryProvider(util.CloudinaryProviderOpts{
+		CloudinaryName:      conf.CloudinaryName,
+		CloudinaryAPIKey:    conf.CloudinaryAPIKey,
+		CloudinaryAPISecret: conf.CloudinartAPISecret,
+	})
+	if err != nil {
+		fmt.Printf("Cloudinary error: %s\n", err)
+	}
 
 	accountSrv := service.NewAccountService(service.AccountServiceOpts{
 		Account:              accountRepository,
@@ -77,9 +85,11 @@ func main() {
 	})
 
 	userSrv := service.NewUserService(service.UserServiceOpts{
-		User:        userRepository,
-		UserAddress: userAddressRepository,
-		Transactor:  transactor,
+		User:               userRepository,
+		UserAddress:        userAddressRepository,
+		Account:            accountRepository,
+		Transactor:         transactor,
+		CloudinaryProvider: cloudinaryProvider,
 	})
 
 	accountHandler := handler.NewAccountHandler(handler.AccountHandlerOpts{
