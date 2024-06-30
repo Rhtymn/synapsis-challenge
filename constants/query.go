@@ -10,7 +10,7 @@ const (
 
 	UserAddressColumns = ` id, name, phone_number, address, latitude, longitude, id_user `
 
-	ProductJoinedShopColumns = ` p.id, p.name, p.slug, p.photo_url, p.price, p.description, p.stock, s.shop_name `
+	ProductJoinedShopColumns = ` p.id, p.name, p.slug, p.photo_url, p.price, p.description, p.stock, p.id_shop, s.shop_name, s.slug `
 
 	SortASC  = "ASC"
 	SortDESC = "DESC"

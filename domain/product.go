@@ -29,6 +29,7 @@ type ProductQuery struct {
 }
 
 type ProductRepository interface {
+	GetByID(ctx context.Context, id int64) (Product, error)
 	GetAll(ctx context.Context, query ProductQuery) ([]Product, error)
 	GetPageInfo(ctx context.Context, query ProductQuery) (PageInfo, error)
 }

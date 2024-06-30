@@ -23,6 +23,41 @@ func NewProductRepository(db *sql.DB) *productRepositoryPostgres {
 	}
 }
 
+func (r *productRepositoryPostgres) GetByID(ctx context.Context, id int64) (domain.Product, error) {
+	queryRunner := util.GetQueryRunner(ctx, r.db)
+	p := domain.Product{}
+	args := pgx.NamedArgs{
+		"id": id,
+	}
+	query := `
+		SELECT ` + constants.ProductJoinedShopColumns + `
+			FROM products p INNER JOIN shops s ON p.id_shop = s.id
+		WHERE p.id = @id AND p.deleted_at IS NULL
+	`
+
+	err := queryRunner.
+		QueryRowContext(ctx, query, args).
+		Scan(&p.ID,
+			&p.Name,
+			&p.Slug,
+			&p.PhotoURL,
+			&p.Price,
+			&p.Description,
+			&p.Stock,
+			&p.Shop.ID,
+			&p.Shop.ShopName,
+			&p.Shop.Slug,
+		)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return p, apperror.NewNotFound(err, "product not found")
+		}
+		return p, apperror.Wrap(err)
+	}
+
+	return p, nil
+}
+
 func (r *productRepositoryPostgres) GetAll(ctx context.Context, query domain.ProductQuery) ([]domain.Product, error) {
 	queryRunner := util.GetQueryRunner(ctx, r.db)
 	sb := strings.Builder{}
@@ -30,7 +65,7 @@ func (r *productRepositoryPostgres) GetAll(ctx context.Context, query domain.Pro
 		SELECT ` + constants.ProductJoinedShopColumns + `
 		FROM products p INNER JOIN categories c ON p.id_category = c.id
 			INNER JOIN shops s ON p.id_shop = s.id
-		WHERE p.deleted_at IS NULL
+		WHERE p.deleted_at IS NULL AND s.is_active = TRUE
 	`)
 	args := pgx.NamedArgs{}
 
@@ -67,7 +102,9 @@ func (r *productRepositoryPostgres) GetAll(ctx context.Context, query domain.Pro
 			&p.Price,
 			&p.Description,
 			&p.Stock,
+			&p.Shop.ID,
 			&p.Shop.ShopName,
+			&p.Shop.Slug,
 		)
 		if err != nil {
 			return nil, apperror.Wrap(err)
