@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/Rhtymn/synapsis-challenge/apperror"
@@ -21,7 +20,6 @@ func ErrorHandler() gin.HandlerFunc {
 
 		apperr, ok := err.(*apperror.AppError)
 		if ok {
-			log.Println(apperr, apperr.GetStackTrace())
 			ctx.AbortWithStatusJSON(
 				getHttpStatus(apperr),
 				dto.ResponseError(apperr),
