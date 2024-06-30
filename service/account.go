@@ -21,18 +21,26 @@ type AccountServiceOpts struct {
 	SellerAccessProvider util.JWTProvider
 	AdminAccessProvider  util.JWTProvider
 	RandomTokenProvider  util.RandomTokenProvider
+
+	AppEmail      util.AppEmail
+	EmailProvider util.EmailProvider
 }
 
 type accountService struct {
 	accountRepository          domain.AccountRepository
 	userRepository             domain.UserRepository
 	emailVerifyTokenRepository domain.EmailVerifyTokenRepository
-	passwordHasher             util.PasswordHasher
-	transactor                 util.Transactor
-	userAccessProvider         util.JWTProvider
-	sellerAccessProvider       util.JWTProvider
-	adminAccessProvider        util.JWTProvider
-	randomTokenProvider        util.RandomTokenProvider
+
+	passwordHasher util.PasswordHasher
+	transactor     util.Transactor
+
+	userAccessProvider   util.JWTProvider
+	sellerAccessProvider util.JWTProvider
+	adminAccessProvider  util.JWTProvider
+	randomTokenProvider  util.RandomTokenProvider
+
+	appEmail      util.AppEmail
+	emailProvider util.EmailProvider
 }
 
 func NewAccountService(opts AccountServiceOpts) *accountService {
@@ -46,6 +54,8 @@ func NewAccountService(opts AccountServiceOpts) *accountService {
 		sellerAccessProvider:       opts.SellerAccessProvider,
 		adminAccessProvider:        opts.AdminAccessProvider,
 		randomTokenProvider:        opts.RandomTokenProvider,
+		emailProvider:              opts.EmailProvider,
+		appEmail:                   opts.AppEmail,
 	}
 }
 
@@ -152,6 +162,11 @@ func (s *accountService) GetVerifyEmailToken(ctx context.Context) error {
 			return apperror.Wrap(err)
 		}
 
+		u, err := s.userRepository.GetByAccountID(ctx, accountId)
+		if err != nil {
+			return apperror.Wrap(err)
+		}
+
 		a, err := s.accountRepository.GetById(ctx, accountId)
 		if err != nil {
 			return apperror.Wrap(err)
@@ -176,6 +191,12 @@ func (s *accountService) GetVerifyEmailToken(ctx context.Context) error {
 		if err != nil {
 			return apperror.Wrap(err)
 		}
+
+		err = s.emailProvider.SendEmail(a.Account.Email, s.appEmail.NewVerifyAccountEmail(u.Name, a.Account.Email, randomToken))
+		if err != nil {
+			return apperror.Wrap(err)
+		}
+
 		return nil
 	})
 	if err != nil {

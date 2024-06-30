@@ -71,6 +71,16 @@ func main() {
 	if err != nil {
 		fmt.Printf("Cloudinary error: %s\n", err)
 	}
+	emailProvider := util.NewEmailProvider(util.EmailProviderOpts{
+		Username: conf.AuthEmailUsername,
+		Password: conf.AuthEmailPassword,
+	})
+	appEmail, err := util.NewAppEmail(util.AppEmailOpts{
+		FEVerivicationURL: conf.FEVerificationURL,
+	})
+	if err != nil {
+		fmt.Printf("Email template error: %s\n", err)
+	}
 
 	accountSrv := service.NewAccountService(service.AccountServiceOpts{
 		Account:              accountRepository,
@@ -82,6 +92,8 @@ func main() {
 		SellerAccessProvider: sellerAccessProvider,
 		AdminAccessProvider:  adminAccessProvider,
 		RandomTokenProvider:  util.NewRandomTokenProvider(32),
+		EmailProvider:        emailProvider,
+		AppEmail:             appEmail,
 	})
 
 	userSrv := service.NewUserService(service.UserServiceOpts{
