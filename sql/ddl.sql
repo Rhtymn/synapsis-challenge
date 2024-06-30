@@ -48,7 +48,7 @@ CREATE TABLE user_addresses(
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
     phone_number VARCHAR NOT NULL,
-    address VARCHAR NOT NULL,
+    address TEXT NOT NULL,
     latitude NUMERIC NOT NULL,
     longitude NUMERIC NOT NULL,
 
@@ -62,9 +62,9 @@ CREATE TABLE user_addresses(
 CREATE TABLE sellers(
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
-    date_of_birth DATE NOT NULL,
+    date_of_birth DATE,
     gender VARCHAR(6),
-    phone_number VARCHAR UNIQUE NOT NULL,
+    phone_number VARCHAR,
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -88,10 +88,11 @@ CREATE TABLE email_verify_tokens(
 CREATE TABLE shops(
     id BIGSERIAL PRIMARY KEY,
     shop_name VARCHAR UNIQUE NOT NULL,
+    slug VARCHAR NOT NULL,
     logo_url VARCHAR,
     phone_number VARCHAR UNIQUE NOT NULL,
     description VARCHAR,
-    address VARCHAR NOT NULL,
+    address TEXT NOT NULL,
     latitude NUMERIC NOT NULL,
     longitude NUMERIC NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -145,7 +146,9 @@ CREATE TABLE shop_payment_methods(
 
 CREATE TABLE categories(
     id BIGSERIAL PRIMARY KEY,
+    image_url VARCHAR,
     name VARCHAR NOT NULL,
+    slug VARCHAR NOT NULL,
     parent_id BIGINT,
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -156,7 +159,9 @@ CREATE TABLE categories(
 CREATE TABLE products(
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
+    slug VARCHAR NOT NULL,
     photo_url VARCHAR,
+    price INT NOT NULL,
     description VARCHAR,
     stock INT NOT NULL DEFAULT 0,
 
@@ -173,9 +178,9 @@ CREATE TABLE transactions(
     invoice VARCHAR NOT NULL,
     status VARCHAR NOT NULL,
     num_of_items INT NOT NULL,
-    subtotal DECIMAL NOT NULL,
-    shipment_fee DECIMAL NOT NULL,
-    total_fee DECIMAL NOT NULL,
+    subtotal INT NOT NULL,
+    shipment_fee INT NOT NULL,
+    total_fee INT NOT NULL,
     address VARCHAR NOT NULL,
     latitude NUMERIC NOT NULL,
     longitude NUMERIC NOT NULL,
