@@ -59,6 +59,7 @@ func main() {
 	accountRepository := repository.NewAccountRepository(db)
 	userRepository := repository.NewUserRepository(db)
 	userAddressRepository := repository.NewUserAddressRepository(db)
+	productRepository := repository.NewProductRepository(db)
 	emailVerifyTokenRepository := repository.NewEmailVerifyTokenRepository(db)
 
 	passwordHasher := util.NewPasswordHasherBcrypt(10)
@@ -95,13 +96,15 @@ func main() {
 		EmailProvider:        emailProvider,
 		AppEmail:             appEmail,
 	})
-
 	userSrv := service.NewUserService(service.UserServiceOpts{
 		User:               userRepository,
 		UserAddress:        userAddressRepository,
 		Account:            accountRepository,
 		Transactor:         transactor,
 		CloudinaryProvider: cloudinaryProvider,
+	})
+	productSrv := service.NewProductService(service.ProductServiceOpts{
+		Product: productRepository,
 	})
 
 	accountHandler := handler.NewAccountHandler(handler.AccountHandlerOpts{
@@ -112,6 +115,10 @@ func main() {
 		User:   userSrv,
 		Domain: "user",
 	})
+	productHandler := handler.NewProductHandler(handler.ProductHandlerOpts{
+		Product: productSrv,
+		Domain:  "product",
+	})
 	corsHandler := middleware.CorsHandler(conf.CorsDomain)
 	errorHandler := middleware.ErrorHandler()
 
@@ -120,6 +127,7 @@ func main() {
 		ErrorHandler:   errorHandler,
 		AccountHandler: accountHandler,
 		UserHandler:    userHandler,
+		ProductHandler: productHandler,
 		Authenticator:  authenticator,
 	})
 	srv := &http.Server{

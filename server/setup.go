@@ -12,6 +12,7 @@ import (
 type ServerOpts struct {
 	AccountHandler *handler.AccountHandler
 	UserHandler    *handler.UserHandler
+	ProductHandler *handler.ProductHandler
 
 	CorsHandler  gin.HandlerFunc
 	ErrorHandler gin.HandlerFunc
@@ -53,6 +54,9 @@ func SetupServer(opts ServerOpts) *gin.Engine {
 	userGroup.POST("/addresses", opts.UserHandler.AddAddress)
 	userGroup.PATCH("/addresses/:address_id/main", opts.UserHandler.UpdateMainAddress)
 	userGroup.PUT(".", opts.UserHandler.UpdateProfile)
+
+	productGroup := apiV1Group.Group("/products")
+	productGroup.GET(".", opts.ProductHandler.GetAll)
 
 	return router
 }
