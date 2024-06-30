@@ -9,4 +9,9 @@ const (
 	EmailVerifyTokenColumns = ` id, token, expired_at `
 
 	UserAddressColumns = ` id, name, phone_number, address, latitude, longitude, id_user `
+
+	ProductJoinedShopColumns = ` p.id, p.name, p.slug, p.photo_url, p.price, p.description, p.stock, s.shop_name `
+
+	SortASC  = "ASC"
+	SortDESC = "DESC"
 )
