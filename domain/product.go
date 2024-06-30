@@ -30,8 +30,10 @@ type ProductQuery struct {
 
 type ProductRepository interface {
 	GetByID(ctx context.Context, id int64) (Product, error)
+	GetByIDAndLock(ctx context.Context, id int64) (Product, error)
 	GetAll(ctx context.Context, query ProductQuery) ([]Product, error)
 	GetPageInfo(ctx context.Context, query ProductQuery) (PageInfo, error)
+	UpdateStockByID(ctx context.Context, id, newStock int64) error
 }
 
 type ProductService interface {
