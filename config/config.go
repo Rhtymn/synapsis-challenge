@@ -32,6 +32,9 @@ type Config struct {
 	AuthEmailPassword string
 
 	FEVerificationURL string
+
+	RedisAddr     string
+	RedisPassword string
 }
 
 func InitConfig() error {
@@ -105,6 +108,16 @@ func LoadConfig() (*Config, error) {
 		return nil, ErrMissingKey
 	}
 	ret.FEVerificationURL = os.Getenv("FE_VERIFICATION_URL")
+
+	if os.Getenv("REDIS_ADDR") == "" {
+		return nil, ErrMissingKey
+	}
+	ret.RedisAddr = os.Getenv("REDIS_ADDR")
+
+	if os.Getenv("REDIS_PASSWORD") == "" {
+		return nil, ErrMissingKey
+	}
+	ret.RedisPassword = os.Getenv("REDIS_PASSWORD")
 
 	s := os.Getenv("ACCESS_TOKEN_LIFESPAN")
 	i, err := strconv.Atoi(s)
