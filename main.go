@@ -10,6 +10,7 @@ import (
 	"github.com/Rhtymn/synapsis-challenge/handler"
 	"github.com/Rhtymn/synapsis-challenge/middleware"
 	repository "github.com/Rhtymn/synapsis-challenge/repository/postgres"
+	"github.com/Rhtymn/synapsis-challenge/repository/redis"
 	"github.com/Rhtymn/synapsis-challenge/server"
 	"github.com/Rhtymn/synapsis-challenge/service"
 	"github.com/Rhtymn/synapsis-challenge/util"
@@ -33,6 +34,8 @@ func main() {
 		fmt.Printf("DB Connection Error: %s\n", err)
 	}
 	defer db.Close()
+
+	rdb := database.NewRedisClient(conf.RedisAddr, conf.RedisPassword, 0)
 
 	userAccessProvider := util.NewJWTProvider(
 		constants.USER_PERMISSION,
@@ -61,6 +64,8 @@ func main() {
 	userAddressRepository := repository.NewUserAddressRepository(db)
 	productRepository := repository.NewProductRepository(db)
 	emailVerifyTokenRepository := repository.NewEmailVerifyTokenRepository(db)
+
+	cartRepositoryRedis := redis.NewCartRepositoryRedis(rdb)
 
 	passwordHasher := util.NewPasswordHasherBcrypt(10)
 	transactor := util.NewTransactor(db)
@@ -106,6 +111,10 @@ func main() {
 	productSrv := service.NewProductService(service.ProductServiceOpts{
 		Product: productRepository,
 	})
+	cartSrv := service.NewCartService(service.CartServiceOpts{
+		Cart:    cartRepositoryRedis,
+		Product: productRepository,
+	})
 
 	accountHandler := handler.NewAccountHandler(handler.AccountHandlerOpts{
 		Account: accountSrv,
@@ -119,6 +128,10 @@ func main() {
 		Product: productSrv,
 		Domain:  "product",
 	})
+	cartHandler := handler.NewCartHandler(handler.CartHandlerOpts{
+		Cart:   cartSrv,
+		Domain: "cart",
+	})
 	corsHandler := middleware.CorsHandler(conf.CorsDomain)
 	errorHandler := middleware.ErrorHandler()
 
@@ -126,6 +139,7 @@ func main() {
 		CorsHandler:    corsHandler,
 		ErrorHandler:   errorHandler,
 		AccountHandler: accountHandler,
+		CartHandler:    cartHandler,
 		UserHandler:    userHandler,
 		ProductHandler: productHandler,
 		Authenticator:  authenticator,

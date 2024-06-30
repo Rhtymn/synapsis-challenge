@@ -13,6 +13,7 @@ type ServerOpts struct {
 	AccountHandler *handler.AccountHandler
 	UserHandler    *handler.UserHandler
 	ProductHandler *handler.ProductHandler
+	CartHandler    *handler.CartHandler
 
 	CorsHandler  gin.HandlerFunc
 	ErrorHandler gin.HandlerFunc
@@ -57,6 +58,14 @@ func SetupServer(opts ServerOpts) *gin.Engine {
 
 	productGroup := apiV1Group.Group("/products")
 	productGroup.GET(".", opts.ProductHandler.GetAll)
+
+	cartGroup := apiV1Group.Group("/carts",
+		opts.Authenticator,
+		middleware.Authorization(constants.USER_PERMISSION),
+	)
+	cartGroup.POST(".", opts.CartHandler.AddToCart)
+	cartGroup.GET(".", opts.CartHandler.GetCart)
+	cartGroup.DELETE("/:id", opts.CartHandler.DeleteCartItem)
 
 	return router
 }
