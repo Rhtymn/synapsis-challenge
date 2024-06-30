@@ -184,6 +184,7 @@ CREATE TABLE transactions(
     address VARCHAR NOT NULL,
     latitude NUMERIC NOT NULL,
     longitude NUMERIC NOT NULL,
+    phone_number VARCHAR NOT NULL,
     
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),

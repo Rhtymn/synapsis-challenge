@@ -1,5 +1,15 @@
 \c synapsis_db
 
+INSERT INTO shipment_methods(name)
+    VALUES ('JNE'), -- 1
+        ('JNT'), -- 2
+        ('SICEPAT'); -- 3
+
+INSERT INTO payment_methods(name)
+    VALUES ('BNI'), -- 1
+        ('BRI'), -- 2
+        ('BCA'); -- 3
+
 INSERT INTO accounts(email, email_verified, password, account_type, profile_set)
     VALUES ('admin@synapsis.id', true, '$2a$10$vvFy/rdK.GcwV5rwkRaa2e28ib9HGxyuEsigigUyuN9lME41Vse/m', 'admin', true), -- 1
         ('roihan@gmail.com', true, '$2a$10$vvFy/rdK.GcwV5rwkRaa2e28ib9HGxyuEsigigUyuN9lME41Vse/m', 'user', true), -- 2
@@ -42,6 +52,20 @@ INSERT INTO shops(shop_name, slug, phone_number, description, address, latitude,
             'Graha Permata 2 Blok F5, Makassar 78901',
             -5.1477, 119.4327,
             true, 5);
+
+INSERT INTO shop_shipment_methods(id_shop, id_shipment_method) 
+    VALUES (1, 1), (1, 2), (1, 3),
+        (2, 1), (2, 2), (2, 3),
+        (3, 1), (3, 2), (3, 3),
+        (4, 1), (4, 2), (4, 3),
+        (5, 1), (5, 2), (5, 3);
+
+INSERT INTO shop_payment_methods(id_shop, id_payment_method) 
+    VALUES (1, 1), (1, 2), (1, 3),
+        (2, 1), (2, 2), (2, 3),
+        (3, 1), (3, 2), (3, 3),
+        (4, 1), (4, 2), (4, 3),
+        (5, 1), (5, 2), (5, 3);
 
 INSERT INTO admins(name, id_account)
     VALUES('admin synapsis', 1);
