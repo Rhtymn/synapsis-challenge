@@ -27,6 +27,11 @@ type Config struct {
 	CloudinaryName      string
 	CloudinaryAPIKey    string
 	CloudinartAPISecret string
+
+	AuthEmailUsername string
+	AuthEmailPassword string
+
+	FEVerificationURL string
 }
 
 func InitConfig() error {
@@ -85,6 +90,21 @@ func LoadConfig() (*Config, error) {
 		return nil, ErrMissingKey
 	}
 	ret.CloudinartAPISecret = os.Getenv("CLOUDINARY_API_SECRET")
+
+	if os.Getenv("AUTH_EMAIL_USERNAME") == "" {
+		return nil, ErrMissingKey
+	}
+	ret.AuthEmailUsername = os.Getenv("AUTH_EMAIL_USERNAME")
+
+	if os.Getenv("AUTH_EMAIL_PASSWORD") == "" {
+		return nil, ErrMissingKey
+	}
+	ret.AuthEmailPassword = os.Getenv("AUTH_EMAIL_PASSWORD")
+
+	if os.Getenv("FE_VERIFICATION_URL") == "" {
+		return nil, ErrMissingKey
+	}
+	ret.FEVerificationURL = os.Getenv("FE_VERIFICATION_URL")
 
 	s := os.Getenv("ACCESS_TOKEN_LIFESPAN")
 	i, err := strconv.Atoi(s)
