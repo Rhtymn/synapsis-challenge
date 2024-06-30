@@ -10,10 +10,11 @@ import (
 )
 
 type ServerOpts struct {
-	AccountHandler *handler.AccountHandler
-	UserHandler    *handler.UserHandler
-	ProductHandler *handler.ProductHandler
-	CartHandler    *handler.CartHandler
+	AccountHandler     *handler.AccountHandler
+	UserHandler        *handler.UserHandler
+	ProductHandler     *handler.ProductHandler
+	CartHandler        *handler.CartHandler
+	TransactionHandler *handler.TransactionHandler
 
 	CorsHandler  gin.HandlerFunc
 	ErrorHandler gin.HandlerFunc
@@ -66,6 +67,18 @@ func SetupServer(opts ServerOpts) *gin.Engine {
 	cartGroup.POST(".", opts.CartHandler.AddToCart)
 	cartGroup.GET(".", opts.CartHandler.GetCart)
 	cartGroup.DELETE("/:id", opts.CartHandler.DeleteCartItem)
+
+	transactionGroup := apiV1Group.Group("/transactions",
+		opts.Authenticator,
+	)
+	transactionGroup.POST(".",
+		middleware.Authorization(constants.USER_PERMISSION),
+		opts.TransactionHandler.CreateTransaction,
+	)
+	transactionGroup.POST("/payments",
+		middleware.Authorization(constants.USER_PERMISSION),
+		opts.TransactionHandler.PayTransaction,
+	)
 
 	return router
 }

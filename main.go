@@ -60,10 +60,17 @@ func main() {
 	authenticator := middleware.Authenticator(anyAccessProvider)
 
 	accountRepository := repository.NewAccountRepository(db)
+	transactionRepository := repository.NewTransactionRepository(db)
+	transactionItemRepository := repository.NewTransactionItemRepository(db)
 	userRepository := repository.NewUserRepository(db)
 	userAddressRepository := repository.NewUserAddressRepository(db)
 	productRepository := repository.NewProductRepository(db)
 	emailVerifyTokenRepository := repository.NewEmailVerifyTokenRepository(db)
+	paymentMethodRepository := repository.NewPaymentMethodRepository(db)
+	shipmentMethodRepository := repository.NewShipmentMethodRepository(db)
+	shopShipmentMethodRepository := repository.NewShopShipmentMethodRepository(db)
+	shopPaymentMethodRepository := repository.NewShopPaymentMethodRepository(db)
+	PaymentRepository := repository.NewPaymentRepository(db)
 
 	cartRepositoryRedis := redis.NewCartRepositoryRedis(rdb)
 
@@ -115,6 +122,21 @@ func main() {
 		Cart:    cartRepositoryRedis,
 		Product: productRepository,
 	})
+	transactionSrv := service.NewTransactionService(service.TransactionServiceOpts{
+		Transaction:        transactionRepository,
+		TransactionItem:    transactionItemRepository,
+		PaymentMethod:      paymentMethodRepository,
+		ShipmentMethod:     shipmentMethodRepository,
+		UserAddress:        userAddressRepository,
+		User:               userRepository,
+		Cart:               cartRepositoryRedis,
+		Product:            productRepository,
+		ShopShipmentMethod: shopShipmentMethodRepository,
+		ShopPaymentMethod:  shopPaymentMethodRepository,
+		Payment:            PaymentRepository,
+		Transactor:         transactor,
+		Cloudinary:         cloudinaryProvider,
+	})
 
 	accountHandler := handler.NewAccountHandler(handler.AccountHandlerOpts{
 		Account: accountSrv,
@@ -132,17 +154,22 @@ func main() {
 		Cart:   cartSrv,
 		Domain: "cart",
 	})
+	transactionHandler := handler.NewTransactionHandler(handler.TransactionHandlerOpts{
+		Transaction: transactionSrv,
+		Domain:      "transaction",
+	})
 	corsHandler := middleware.CorsHandler(conf.CorsDomain)
 	errorHandler := middleware.ErrorHandler()
 
 	router := server.SetupServer(server.ServerOpts{
-		CorsHandler:    corsHandler,
-		ErrorHandler:   errorHandler,
-		AccountHandler: accountHandler,
-		CartHandler:    cartHandler,
-		UserHandler:    userHandler,
-		ProductHandler: productHandler,
-		Authenticator:  authenticator,
+		CorsHandler:        corsHandler,
+		ErrorHandler:       errorHandler,
+		AccountHandler:     accountHandler,
+		CartHandler:        cartHandler,
+		UserHandler:        userHandler,
+		TransactionHandler: transactionHandler,
+		ProductHandler:     productHandler,
+		Authenticator:      authenticator,
 	})
 	srv := &http.Server{
 		Addr:    conf.ServerAddr,

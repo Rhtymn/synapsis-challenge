@@ -58,6 +58,41 @@ func (r *productRepositoryPostgres) GetByID(ctx context.Context, id int64) (doma
 	return p, nil
 }
 
+func (r *productRepositoryPostgres) GetByIDAndLock(ctx context.Context, id int64) (domain.Product, error) {
+	queryRunner := util.GetQueryRunner(ctx, r.db)
+	p := domain.Product{}
+	args := pgx.NamedArgs{
+		"id": id,
+	}
+	query := `
+		SELECT ` + constants.ProductJoinedShopColumns + `
+			FROM products p INNER JOIN shops s ON p.id_shop = s.id
+		WHERE p.id = @id AND p.deleted_at IS NULL FOR UPDATE
+	`
+
+	err := queryRunner.
+		QueryRowContext(ctx, query, args).
+		Scan(&p.ID,
+			&p.Name,
+			&p.Slug,
+			&p.PhotoURL,
+			&p.Price,
+			&p.Description,
+			&p.Stock,
+			&p.Shop.ID,
+			&p.Shop.ShopName,
+			&p.Shop.Slug,
+		)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return p, apperror.NewNotFound(err, "product not found")
+		}
+		return p, apperror.Wrap(err)
+	}
+
+	return p, nil
+}
+
 func (r *productRepositoryPostgres) GetAll(ctx context.Context, query domain.ProductQuery) ([]domain.Product, error) {
 	queryRunner := util.GetQueryRunner(ctx, r.db)
 	sb := strings.Builder{}
@@ -145,4 +180,22 @@ func (r *productRepositoryPostgres) GetPageInfo(ctx context.Context, query domai
 		CurrentPage: int(query.Page),
 		ItemCount:   totalData,
 	}, nil
+}
+
+func (r *productRepositoryPostgres) UpdateStockByID(ctx context.Context, id, newStock int64) error {
+	queryRunner := util.GetQueryRunner(ctx, r.db)
+	query := `
+		UPDATE products SET stock = @stock
+			WHERE id = @id AND deleted_at IS NULL
+	`
+	args := pgx.NamedArgs{
+		"id":    id,
+		"stock": newStock,
+	}
+
+	_, err := queryRunner.ExecContext(ctx, query, args)
+	if err != nil {
+		return apperror.Wrap(err)
+	}
+	return nil
 }
