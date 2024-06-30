@@ -18,12 +18,15 @@ type Config struct {
 	ServerAddr  string
 	CorsDomain  string
 
-	JWTIssuer          string
-	SellerAccessSecret string
-	UserAccessSecret   string
-	AdminAccessSecret  string
-
+	JWTIssuer           string
+	SellerAccessSecret  string
+	UserAccessSecret    string
+	AdminAccessSecret   string
 	AccessTokenLifespan time.Duration
+
+	CloudinaryName      string
+	CloudinaryAPIKey    string
+	CloudinartAPISecret string
 }
 
 func InitConfig() error {
@@ -67,6 +70,21 @@ func LoadConfig() (*Config, error) {
 		return nil, ErrMissingKey
 	}
 	ret.AdminAccessSecret = os.Getenv("ADMIN_ACCESS_SECRET")
+
+	if os.Getenv("CLOUDINARY_NAME") == "" {
+		return nil, ErrMissingKey
+	}
+	ret.CloudinaryName = os.Getenv("CLOUDINARY_NAME")
+
+	if os.Getenv("CLOUDINARY_API_KEY") == "" {
+		return nil, ErrMissingKey
+	}
+	ret.CloudinaryAPIKey = os.Getenv("CLOUDINARY_API_KEY")
+
+	if os.Getenv("CLOUDINARY_API_SECRET") == "" {
+		return nil, ErrMissingKey
+	}
+	ret.CloudinartAPISecret = os.Getenv("CLOUDINARY_API_SECRET")
 
 	s := os.Getenv("ACCESS_TOKEN_LIFESPAN")
 	i, err := strconv.Atoi(s)
