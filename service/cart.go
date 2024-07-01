@@ -11,17 +11,20 @@ import (
 type cartService struct {
 	cartRepository    domain.CartRepositoryRedis
 	productRepository domain.ProductRepository
+	accountRepository domain.AccountRepository
 }
 
 type CartServiceOpts struct {
 	Cart    domain.CartRepositoryRedis
 	Product domain.ProductRepository
+	Account domain.AccountRepository
 }
 
 func NewCartService(opts CartServiceOpts) *cartService {
 	return &cartService{
 		cartRepository:    opts.Cart,
 		productRepository: opts.Product,
+		accountRepository: opts.Account,
 	}
 }
 
@@ -29,6 +32,15 @@ func (s *cartService) Add(ctx context.Context, ci domain.CartItem) error {
 	accountID, err := util.GetAccountIDFromContext(ctx)
 	if err != nil {
 		return apperror.Wrap(err)
+	}
+
+	a, err := s.accountRepository.GetById(ctx, accountID)
+	if err != nil {
+		return apperror.Wrap(err)
+	}
+
+	if !a.Account.EmailVerified || !a.Account.ProfileSet {
+		return apperror.NewBadRequest(nil, "please verify your email and set your profile before add product to cart")
 	}
 
 	product, err := s.productRepository.GetByID(ctx, ci.Product.ID)
