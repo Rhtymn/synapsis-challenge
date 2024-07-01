@@ -121,6 +121,7 @@ func main() {
 	cartSrv := service.NewCartService(service.CartServiceOpts{
 		Cart:    cartRepositoryRedis,
 		Product: productRepository,
+		Account: accountRepository,
 	})
 	transactionSrv := service.NewTransactionService(service.TransactionServiceOpts{
 		Transaction:        transactionRepository,
